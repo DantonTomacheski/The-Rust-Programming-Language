@@ -3,8 +3,8 @@
 use std::net::SocketAddr;
 
 pub use self::error::{Error,Result};
-use axum::{Router, extract::{Path, Query}, response::{Html, IntoResponse}, routing::get};
-use serde::Deserialize;
+use axum::{Json, Router, extract::{Path, Query}, response::{Html, IntoResponse}, routing::get};
+use serde::{Deserialize, Serialize};
 use tower_http::services::ServeDir;
 
 mod error;
@@ -33,7 +33,8 @@ fn routes_static() -> ServeDir {
 fn routes_hello() -> Router {
     Router::new()
         .route("/hello",get(handler_hello))
-        .route("/hello2/{name}", get(handler_hello2))                                    
+        .route("/hello2/{name}", get(handler_hello2))
+        .route("/hello-json/{name}", get(handler_hello_json))                                    
 }
 
 #[derive(Debug, Deserialize)]
@@ -41,9 +42,14 @@ struct HelloParams {
     name: Option<String>
 }
 
+#[derive(Serialize)]
+struct HelloResponse {
+    message: String,
+}
+
 // e.g., `/hello?name=Danton`
 async fn handler_hello(Query(params): Query<HelloParams>) -> impl IntoResponse {
-    println!("->> {:<12} - handler_hello - {params:?}", "HANDLER");
+    println!("->> {:<12} - handler - {params:?}", "HANDLER");
 
     let name = params.name.as_deref().unwrap_or("World");
     Html(format!("<h1>Hello {name}</h1>"))
@@ -51,7 +57,16 @@ async fn handler_hello(Query(params): Query<HelloParams>) -> impl IntoResponse {
 
 // e.g., `/hello2/Danton/`
 async fn handler_hello2(Path(name): Path<String>) -> impl IntoResponse {
-    println!("->> {:<12} - handler_hello2 - {name}", "HANDLER_HELLO2");
+    println!("->> {:<12} - handler - {name}", "HANDLER_HELLO2");
     Html(format!("<h2>Hello {name}</h2>"))
+}
+
+async fn handler_hello_json(Path(name): Path<String>) -> impl IntoResponse {
+    println!("->> {:<12} - handler - {name}", "HANDLER_JSON");
+    let response = HelloResponse {
+        message: format!("Hello {name}")
+    };
+
+    Json(response)
 }
 // endregion: --- Routes Hello
