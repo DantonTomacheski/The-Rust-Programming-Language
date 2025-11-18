@@ -34,7 +34,7 @@ fn routes_hello() -> Router {
     Router::new()
         .route("/hello",get(handler_hello))
         .route("/hello2/{name}", get(handler_hello2))
-        .route("/hello-json/{name}", get(handler_hello_json))                                    
+        .route("/hello-json/{name}", get(handler_hello_json))
 }
 
 #[derive(Debug, Deserialize)]
@@ -62,7 +62,6 @@ async fn handler_hello2(Path(name): Path<String>) -> impl IntoResponse {
 }
 
 async fn handler_hello_json(Path(name): Path<String>) -> impl IntoResponse {
-    println!("->> {:<12} - handler - {name}", "HANDLER_JSON");
     let response = HelloResponse {
         message: format!("Hello {name}")
     };
